@@ -2,8 +2,8 @@
 //  AppDelegate.swift
 //  recipe network
 //
-//  Created by Bri on 12/23/17.
-//  Copyright © 2017 Bri. All rights reserved.
+//  Created by Dee Chapman on 12/23/17.
+//  Copyright © 2017 Dee Chapman. All rights reserved.
 //
 
 import Cocoa
