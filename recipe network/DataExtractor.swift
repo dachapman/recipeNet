@@ -69,10 +69,8 @@ class DataExtractor: NSObject {
     }
     
     func recipes() -> Array<Recipe> {
-        print("here")
         var recipeArray = Array<Recipe>()
         let recipeStringArray = getRecipeStringArray()!
-        print("there")
         var i = 0
         let ingredListString = readDataFromFile(filename: "ingredients", ofType: "txt")
         let ingredListArray = ingredListString?.components(separatedBy: CharacterSet(charactersIn: "\r\n"))
@@ -133,8 +131,6 @@ class DataExtractor: NSObject {
         var jsonData: Data!
         do {
             jsonData = try JSONSerialization.data(withJSONObject: array as NSArray, options: JSONSerialization.WritingOptions());
-//            let jsonString = String(data: jsonData as Data, encoding: String.Encoding.utf8)
-//            print(jsonString ?? "nil")
         } catch let error as NSError {
             print("Array to JSON conversion failed: \(error.localizedDescription)")
         }
@@ -164,4 +160,6 @@ class DataExtractor: NSObject {
             recipeStringArray.append(recipe.toJSON()!)
         }
     }
+    
+
 }

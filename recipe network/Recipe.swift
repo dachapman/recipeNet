@@ -35,6 +35,33 @@ class Recipe: NSObject {
         
     }
     
+    // convenience init that accepts a json string and creates a recipe
+    convenience init?(jsonString: String) {
+        // take string and convert to a json object
+        let jsonData = jsonString.data(using: String.Encoding.utf8)
+        do {
+            let jsonRepresentation = try JSONSerialization.jsonObject(with: jsonData!, options: JSONSerialization.ReadingOptions())
+            if jsonRepresentation is Dictionary<String, Any> {
+                let dictionaryRepresentation = jsonRepresentation as! Dictionary<String, Any>
+                // make recipe
+                self.init(title: dictionaryRepresentation["title"] as! String,
+                          rating: dictionaryRepresentation["rating"] as! Float,
+                          ingredients: dictionaryRepresentation["ingredients"] as! Dictionary<String, Float>,
+                          calories: dictionaryRepresentation["calories"] as! Float,
+                          protein: dictionaryRepresentation["protein"] as! Float,
+                          fat: dictionaryRepresentation["fat"] as! Float,
+                          sodium: dictionaryRepresentation["sodium"] as! Float,
+                          orderedIngredients: dictionaryRepresentation["orderedIngredients"] as! Array<String>,
+                          orderedIncludedIngredients: dictionaryRepresentation["orderedIncludedIngredients"] as! Array<Float>,
+                          allIngredients: dictionaryRepresentation["allIngredients"] as! Array<String>)
+            }
+        } catch let error as NSError {
+            print("JSON string to recipe failed: \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
+    // create a dictionary and serialize an instance of recipe to a string
     func toJSON() -> String? {
         var jsonData: Data!
         do {
@@ -57,4 +84,5 @@ class Recipe: NSObject {
         }
         return nil
     }
+    
 }

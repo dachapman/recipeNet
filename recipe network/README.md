@@ -6,3 +6,4 @@ Input to the network will be a binary list of ingredients, output will be a reco
 Training data:  take recipes, remove one ingredient, and then predict what was removed.  We will remember what was removed and then compare the predicted ingredient to the one we removed.
 
 Training data was processed and cleaned from https://www.kaggle.com/hugodarwood/epirecipes. To expand the training data, one ingredient was removed at a time.
+
