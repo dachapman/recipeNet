@@ -77,4 +77,9 @@ class recipe_networkTests: XCTestCase {
         extractor.fromJSON(dataSetNum: 1)
     }
     
+    func testCreateAllTrainingData() {
+        let extractor = DataExtractor()
+        extractor.createAllTrainingData()
+    }
+    
 }

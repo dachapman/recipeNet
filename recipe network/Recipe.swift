@@ -86,8 +86,23 @@ class Recipe: NSObject {
         return nil
     }
     
-    // create the training data from a single recipe, return
-    func createTrainingData() {
-        
+    // create the training data from a single recipe, return an array of tuples with
+    // an input of a recipe missing an ingredient, and an output of the original recipe
+    func createTrainingData() -> Array<(input: Array<Float>, output: Array<Float>)> {
+        let output = self.orderedIncludedIngredients
+        var trainingDataArray = Array<(input: Array<Float>, output: Array<Float>)>()
+        // use allIngredients to find the indices for each ingredient.
+        var arrayOfIndicesForIngredients = Array<Int>()
+        for ingredient in self.allIngredients {
+            arrayOfIndicesForIngredients.append(self.orderedIngredients.index(of: ingredient)!)
+        }
+        for ingredientToRemove in arrayOfIndicesForIngredients {
+            var inputDataForOneVariation = self.orderedIncludedIngredients
+            inputDataForOneVariation[ingredientToRemove] = 0.0
+            trainingDataArray.append((input: inputDataForOneVariation, output: output))
+        }
+        return trainingDataArray
     }
+            
+        
 }

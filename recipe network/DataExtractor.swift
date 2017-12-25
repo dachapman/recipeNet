@@ -182,7 +182,14 @@ class DataExtractor: NSObject {
         return nil
     }
     
-    // create training data sets from all the recipes
+    // create an array of training data sets for all the recipes
+    func createAllTrainingData() -> Array<(input: Array<Float>, output: Array<Float>)> {
+        var allTrainingData = Array<(input: Array<Float>, output: Array<Float>)>()
+        for recipe in fromJSON(dataSetNum: 1)! {
+            allTrainingData = allTrainingData + recipe.createTrainingData()
+        }
+        return allTrainingData
+    }
     
     
 
