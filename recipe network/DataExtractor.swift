@@ -161,5 +161,29 @@ class DataExtractor: NSObject {
         }
     }
     
+    // extract individual recipe object strings, return an array of recipes
+    func fromJSON(dataSetNum: Int) -> Array<Recipe>? {
+        let dataString = readDataFromFile(filename: "json_data/dataset_\(dataSetNum)", ofType: "json")!
+        
+        let jsonData = dataString.data(using: String.Encoding.utf8)
+        do {
+            let jsonRepresentation = try JSONSerialization.jsonObject(with: jsonData!, options: JSONSerialization.ReadingOptions())
+            if jsonRepresentation is Array<String> {
+                let arrayRepresentation = jsonRepresentation as! Array<String>
+                var arrayOfRecipes: Array<Recipe> = Array<Recipe>()
+                for recipeString in arrayRepresentation {
+                    arrayOfRecipes.append(Recipe(jsonString: recipeString)!)
+                }
+                return arrayOfRecipes
+            }
+        } catch let error as NSError {
+            print("JSON string to recipe failed: \(error.localizedDescription)")
+        }
+        return nil
+    }
+    
+    // create training data sets from all the recipes
+    
+    
 
 }

@@ -41,8 +41,7 @@ class Recipe: NSObject {
         let jsonData = jsonString.data(using: String.Encoding.utf8)
         do {
             let jsonRepresentation = try JSONSerialization.jsonObject(with: jsonData!, options: JSONSerialization.ReadingOptions())
-            if jsonRepresentation is Dictionary<String, Any> {
-                let dictionaryRepresentation = jsonRepresentation as! Dictionary<String, Any>
+            if let dictionaryRepresentation = jsonRepresentation as? Dictionary<String, Any> {
                 // make recipe
                 self.init(title: dictionaryRepresentation["title"] as! String,
                           rating: dictionaryRepresentation["rating"] as! Float,
@@ -54,11 +53,13 @@ class Recipe: NSObject {
                           orderedIngredients: dictionaryRepresentation["orderedIngredients"] as! Array<String>,
                           orderedIncludedIngredients: dictionaryRepresentation["orderedIncludedIngredients"] as! Array<Float>,
                           allIngredients: dictionaryRepresentation["allIngredients"] as! Array<String>)
+            } else {
+                return nil
             }
         } catch let error as NSError {
             print("JSON string to recipe failed: \(error.localizedDescription)")
+            return nil
         }
-        return nil
     }
     
     // create a dictionary and serialize an instance of recipe to a string
@@ -85,4 +86,8 @@ class Recipe: NSObject {
         return nil
     }
     
+    // create the training data from a single recipe, return
+    func createTrainingData() {
+        
+    }
 }

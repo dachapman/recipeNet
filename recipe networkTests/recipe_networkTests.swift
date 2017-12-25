@@ -72,4 +72,9 @@ class recipe_networkTests: XCTestCase {
         extractor.toJSON()
     }
     
+    func testFromJSON() {
+        let extractor = DataExtractor()
+        extractor.fromJSON(dataSetNum: 1)
+    }
+    
 }
