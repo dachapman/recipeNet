@@ -48,8 +48,20 @@ class NeuralNetwork: NSObject {
         
     }
     
-    func predict() {
-        
+    // returns output from network (all ingredients in a complete recipe)
+    func predict(input: Array<Double>) -> Array<Double> {
+        // check that input is the same size as the first layer of our network
+        guard input.count == weights.first?.count else {
+            print("Input (size \(input.count)) is not the same size as first layer of network (\(weights.first?.count))")
+            return []
+        }
+        // output will be the last layer of the network activation values
+        // "guard" handles a failure on inference to produce output
+        guard let output = inference(input: input).last else {
+            print("inference failed to produce output")
+            return []
+        }
+        return output
     }
     
     // run input through network and return output, which will be a 2d array of activations (0.0-1.0) of each neuron
