@@ -23,6 +23,8 @@
 		03EF029D1FF04F45008F0EA1 /* ingredients.txt in Resources */ = {isa = PBXBuildFile; fileRef = 03EF029B1FF04F45008F0EA1 /* ingredients.txt */; };
 		03EF029F1FF060B7008F0EA1 /* epi_r_small.csv in Resources */ = {isa = PBXBuildFile; fileRef = 03EF029E1FF060B7008F0EA1 /* epi_r_small.csv */; };
 		03EF02A01FF060B7008F0EA1 /* epi_r_small.csv in Resources */ = {isa = PBXBuildFile; fileRef = 03EF029E1FF060B7008F0EA1 /* epi_r_small.csv */; };
+		9868CD031FF204260090A03C /* NeuralNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9868CD021FF204260090A03C /* NeuralNetwork.swift */; };
+		9868CD041FF204260090A03C /* NeuralNetwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9868CD021FF204260090A03C /* NeuralNetwork.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +54,7 @@
 		03EF02991FEF6E1C008F0EA1 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		03EF029B1FF04F45008F0EA1 /* ingredients.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ingredients.txt; sourceTree = "<group>"; };
 		03EF029E1FF060B7008F0EA1 /* epi_r_small.csv */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = epi_r_small.csv; sourceTree = "<group>"; };
+		9868CD021FF204260090A03C /* NeuralNetwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NeuralNetwork.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -105,6 +108,7 @@
 				03EF02851FEEAD66008F0EA1 /* Recipe.swift */,
 				03EF02871FEEAD7D008F0EA1 /* DataExtractor.swift */,
 				03EF027D1FEEABDE008F0EA1 /* recipe_network.entitlements */,
+				9868CD021FF204260090A03C /* NeuralNetwork.swift */,
 			);
 			path = "recipe network";
 			sourceTree = "<group>";
@@ -231,6 +235,7 @@
 				03EF02761FEEABDE008F0EA1 /* AppDelegate.swift in Sources */,
 				03EF02881FEEAD7D008F0EA1 /* DataExtractor.swift in Sources */,
 				03EF02861FEEAD66008F0EA1 /* Recipe.swift in Sources */,
+				9868CD031FF204260090A03C /* NeuralNetwork.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,6 +246,7 @@
 				03EF02981FEF6AB2008F0EA1 /* Recipe.swift in Sources */,
 				03EF02971FEEC194008F0EA1 /* DataExtractor.swift in Sources */,
 				03EF02901FEEC061008F0EA1 /* recipe_networkTests.swift in Sources */,
+				9868CD041FF204260090A03C /* NeuralNetwork.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
