@@ -44,8 +44,36 @@ class NeuralNetwork: NSObject {
         }
     }
     
-    func train(input: Array<Double>, desiredOutput: Array<Double>) {
-        
+    // try inference, figure out direction of error, update weights to move closer to correct answer
+    // returns actual output
+    func train(input: Array<Double>, desiredOutput: Array<Double>) -> Array<Double>{
+        // check that input is the same size as the first layer of our network
+        guard input.count == weights.first?.count else {
+            print("Input (size \(input.count)) is not the same size as first layer of network (\(weights.first?.count))")
+            return []
+        }
+        // forward propagation (inference)
+        var neuronActivation: [[Double]] = inference(input: input)
+        // make sure inference worked
+        guard let output = neuronActivation.last else {
+            print("inference failed to produce output")
+            return []
+        }
+        // initialize delta array which holds one delta for each activation
+        var delta: [[Double]] = []
+        for layer in 0..<neuronActivation.count {
+            // one delta for each neuron
+            delta.append(Array(repeatElement(0.0, count: neuronActivation[layer].count)))
+        }
+        // compute gradient for the output using our observed error
+        let lastIndexActivation = neuronActivation.count - 1
+        // loop through output and determine error
+        for neuron in 0..<output.count {
+            //
+            let error = desiredOutput[neuron] - output[neuron]
+            // compute how much we want to change
+            
+        }
     }
     
     // returns output from network (all ingredients in a complete recipe)
