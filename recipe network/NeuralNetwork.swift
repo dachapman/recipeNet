@@ -15,8 +15,33 @@ enum NetworkActivation {
 
 class NeuralNetwork: NSObject {
     
+    var weights : [[[Double]]] = []
+    
     // default value is sigmoid activation function, but can also set it to relu
     var activationType : NetworkActivation = NetworkActivation.sigmoid
+    
+    init (layerWidth: Array<Int>) {
+        initRandomWeights(layerWidth: layerWidth)
+    }
+    
+    func initRandomWeights(layerWidth: Array<Int>) {
+        for layer in 0..<(layerWidth.endIndex - 1) {
+            var nextLayerWidth = layerWidth[layer + 1]
+            var layerWeights : [[Double]] = []
+            // create random weights for each layer
+            for _ in 0..<layerWidth[layer] {
+                var randomLayerWeights : [Double] = []
+                
+                // construct the weights
+                for _ in 0..<nextLayerWidth {
+                    let randomInt = self.makeRandomValue(range: -10000..<10000)
+                    randomLayerWeights.append(Double(randomInt) / 10000.0)
+                }
+                layerWeights.append(randomLayerWeights)
+            }
+            self.weights.append(layerWeights)
+        }
+    }
     
     func train() {
         
@@ -75,5 +100,9 @@ class NeuralNetwork: NSObject {
             return 1.0
         }
 
+    }
+    
+    func makeRandomValue(range:Range<Int>) -> Int {
+        return Int(arc4random_uniform(UInt32(range.upperBound - range.lowerBound))) + range.lowerBound
     }
 }
