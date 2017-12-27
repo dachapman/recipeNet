@@ -21,6 +21,9 @@ class Recipe: NSObject {
     // a short array which represents JUST the ingredients that are not 0.0 in this recipe
     var allIngredients : Array<String>
     
+    // used for reading training data set
+    var trainingData : Array<(input: Array<Float>, output: Array<Float>)>? = nil
+    
     init(title: String, rating: Float, ingredients: Dictionary<String, Float>, calories: Float, protein: Float, fat: Float, sodium: Float, orderedIngredients: Array<String>, orderedIncludedIngredients: Array<Float>, allIngredients : Array<String>) {
         self.title = title
         self.rating = rating
@@ -101,6 +104,7 @@ class Recipe: NSObject {
             inputDataForOneVariation[ingredientToRemove] = 0.0
             trainingDataArray.append((input: inputDataForOneVariation, output: output))
         }
+        self.trainingData = trainingDataArray
         return trainingDataArray
     }
             

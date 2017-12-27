@@ -82,4 +82,8 @@ class recipe_networkTests: XCTestCase {
         extractor.createAllTrainingData()
     }
     
+    func trainNN() {
+        
+    }
+    
 }

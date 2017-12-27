@@ -11,6 +11,12 @@ import Cocoa
 class DataExtractor: NSObject {
     var dataTitles : Array<String> = Array()
     
+    // properties used for getting training data
+    var fileIndex : Int = 1
+    var fileData : Array<Recipe>? = nil
+    var recipeIndex : Int = 0
+    var recipe : Recipe? = nil
+    
     func readDataFromFile(filename:String, ofType:String) -> String! {
         guard let filepath = Bundle.main.path(forResource: filename, ofType: ofType)
             else {
@@ -191,6 +197,10 @@ class DataExtractor: NSObject {
         return allTrainingData
     }
     
+    // return the next piece of training data
+    func getNextTrainingData() -> (input: Array<Float>, output: Array<Float>)? {
+        //
+    }
     
 
 }

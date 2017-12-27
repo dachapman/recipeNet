@@ -3,7 +3,7 @@
 //  recipe network
 //
 //  Created by Dee Chapman on 12/25/17.
-//  Copyright © 2017 Bri. All rights reserved.
+//  Copyright © 2017 Dee Chapman. All rights reserved.
 //
 
 import Foundation
@@ -13,7 +13,7 @@ enum NetworkActivation {
     case relu
 }
 
-class NeuralNetwork: NSObject {
+struct NeuralNetwork {
     
     // "weights" holds all the weight values between layers.
     var weights : [[[Double]]] = []
@@ -28,7 +28,7 @@ class NeuralNetwork: NSObject {
         initRandomWeights(layerWidth: layerWidth)
     }
     
-    func initRandomWeights(layerWidth: Array<Int>) {
+    private mutating func initRandomWeights(layerWidth: Array<Int>) {
         for layer in 0..<(layerWidth.endIndex - 1) {
             let nextLayerWidth = layerWidth[layer + 1]
             var layerWeights : [[Double]] = []
@@ -92,7 +92,8 @@ class NeuralNetwork: NSObject {
         for layer in 0..<weights.count {
             for i in 0..<weights[layer].count {
                 for j in 0..<weights[layer][i].count {
-                    weights[layer][i][j] += (learningRate * neuronActivation[layer][i] * delta[layer + 1][j])
+                    let multActDelta = neuronActivation[layer][i] * delta[layer + 1][j]
+                    weights[layer][i][j] += (learningRate * multActDelta)
                 }
             }
         }
@@ -201,46 +202,42 @@ class NeuralNetwork: NSObject {
     
     // write weights array to a file for possible future use
     func saveWeightsToFile(index: Int) {
-        do {
-            let documentsDirectoryPathString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
-            let documentsDirectoryPath = NSURL(string: documentsDirectoryPathString)!
-            let filename = "weights_\(index).json"
-            
-            let jsonFilePath = documentsDirectoryPath.appendingPathComponent(filename)
-            let fileManager = FileManager.default
-            var isDirectory: ObjCBool = false
-            
-            // creating a .json file in the Documents folder
-            if !fileManager.fileExists(atPath: (jsonFilePath?.absoluteString)!, isDirectory: &isDirectory) {
-                let created = fileManager.createFile(atPath: (jsonFilePath?.absoluteString)!, contents: nil, attributes: nil)
-                if created {
-                    print("File created \(String(describing: jsonFilePath)) ")
-                } else {
-                    print("Couldn't create file for some reason")
-                }
+        
+        let documentsDirectoryPathString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        let documentsDirectoryPath = NSURL(string: documentsDirectoryPathString)!
+        let filename = "weights_\(index).json"
+        
+        let jsonFilePath = documentsDirectoryPath.appendingPathComponent(filename)
+        let fileManager = FileManager.default
+        var isDirectory: ObjCBool = false
+        
+        // creating a .json file in the Documents folder
+        if !fileManager.fileExists(atPath: (jsonFilePath?.absoluteString)!, isDirectory: &isDirectory) {
+            let created = fileManager.createFile(atPath: (jsonFilePath?.absoluteString)!, contents: nil, attributes: nil)
+            if created {
+                print("File created \(String(describing: jsonFilePath)) ")
             } else {
-                print("File already exists: \(String(describing: jsonFilePath))")
+                print("Couldn't create file for some reason")
             }
-            
-            // creating JSON out of the above array
-            var jsonData: Data!
-            do {
-                jsonData = try JSONSerialization.data(withJSONObject: weights as NSArray, options: JSONSerialization.WritingOptions());
-            } catch let error as NSError {
-                print("Array to JSON conversion failed: \(error.localizedDescription)")
-            }
-            
-            // Write that JSON to the file created earlier
-            do {
-                let file = try FileHandle(forWritingTo: jsonFilePath!)
-                file.write(jsonData)
-                print("JSON data was written to the file successfully! \(String(describing: jsonFilePath))")
-            } catch let error as NSError {
-                print("Couldn't write to file: \(error.localizedDescription)")
-            }
-            
+        } else {
+            print("File already exists: \(String(describing: jsonFilePath))")
+        }
+        
+        // creating JSON out of the above array
+        var jsonData: Data!
+        do {
+            jsonData = try JSONSerialization.data(withJSONObject: weights as NSArray, options: JSONSerialization.WritingOptions());
         } catch let error as NSError {
             print("Array to JSON conversion failed: \(error.localizedDescription)")
+        }
+        
+        // Write that JSON to the file created earlier
+        do {
+            let file = try FileHandle(forWritingTo: jsonFilePath!)
+            file.write(jsonData)
+            print("JSON data was written to the file successfully! \(String(describing: jsonFilePath))")
+        } catch let error as NSError {
+            print("Couldn't write to file: \(error.localizedDescription)")
         }
     }
 }
