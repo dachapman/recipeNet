@@ -8,6 +8,12 @@
 
 import Cocoa
 
+enum Dataset {
+    case train
+    case test
+    case dev
+}
+
 class DataExtractor: NSObject {
     var dataTitles : Array<String> = Array()
     
@@ -16,6 +22,12 @@ class DataExtractor: NSObject {
     var fileData : Array<Recipe>? = nil
     var recipeIndex : Int = 0
     var recipe : Recipe? = nil
+    
+    // split the data
+    var testPercent : Int = 15
+    var devPercent : Int = 15
+    var trainingPercent : Int = 70
+    var currentDataIndex : Int = 0
     
     func readDataFromFile(filename:String, ofType:String) -> String! {
         guard let filepath = Bundle.main.path(forResource: filename, ofType: ofType)
@@ -197,10 +209,75 @@ class DataExtractor: NSObject {
         return allTrainingData
     }
     
-    // return the next piece of training data
-    func getNextTrainingData() -> (input: Array<Float>, output: Array<Float>)? {
-        //
+    // get the next recipe from the data
+    func getNextRecipe() -> Recipe? {
+        if self.fileData == nil && self.fileIndex == 1 {
+            self.fileData = fromJSON(dataSetNum: self.fileIndex)
+            self.fileIndex += 1
+        }
+        if self.recipeIndex > (self.fileData?.endIndex)! {
+            // get the next data file
+            self.fileData = fromJSON(dataSetNum: self.fileIndex)
+            self.fileIndex += 1
+            self.recipeIndex = 0
+        }
+        if self.fileData == nil {
+            return nil
+        }
+        return self.fileData?[self.recipeIndex]
     }
     
+    // return the next piece of data from the dataset
+    func getNextData() -> (input: Array<Float>, output: Array<Float>)? {
+        if self.recipe == nil {
+            self.recipe = getNextRecipe()
+        }
+        if self.recipe != nil {
+            if self.recipe?.getNextTrainingData() == nil {
+                self.recipe = getNextRecipe()
+            }
+        } else {
+            return nil
+        }
+        self.currentDataIndex += 1
+        return self.recipe?.getNextTrainingData()
+    }
+    
+    // create a test, dev, training split of all the data
+    // suggested split:  training: 70%, dev: 15%, test: 15%
+    func getNextData(dataset: Dataset) -> (input: Array<Float>, output: Array<Float>)? {
+        var pieceOfDataToReturn : (input: Array<Float>, output: Array<Float>)? = nil
+        var flagInCorrectRange = false
+        
+        // purposely incurring a performance hit in order to:
+        //     1) ensure reproducibility of results,
+        //     2) limit amount of the dataset that needs to be stored in RAM (at most, 100 recipes at a time)
+        while (flagInCorrectRange == false) {
+            switch dataset {
+            case .train:
+                if self.currentDataIndex % 100 < self.trainingPercent {
+                    pieceOfDataToReturn = self.getNextData()
+                    flagInCorrectRange = true
+                } else {
+                    _ = self.getNextData()
+                }
+            case .dev:
+                if self.currentDataIndex % 100 >= self.trainingPercent && self.currentDataIndex < (self.trainingPercent + self.devPercent) {
+                    pieceOfDataToReturn = self.getNextData()
+                    flagInCorrectRange = true
+                } else {
+                    _ = self.getNextData()
+                }
+            case .test:
+                if self.currentDataIndex % 100 >= (self.trainingPercent + self.devPercent) && self.currentDataIndex < (self.trainingPercent + self.devPercent + self.testPercent) {
+                    pieceOfDataToReturn = self.getNextData()
+                    flagInCorrectRange = true
+                } else {
+                    _ = self.getNextData()
+                }
+            }
+        }
+        return pieceOfDataToReturn
+    }
 
 }

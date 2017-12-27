@@ -49,7 +49,7 @@ struct NeuralNetwork {
     
     // try inference, figure out direction of error, update weights to move closer to correct answer
     // returns actual output
-    func train(input: Array<Double>, desiredOutput: Array<Double>) -> Array<Double>{
+    mutating func train(input: Array<Double>, desiredOutput: Array<Double>) -> Array<Double>{
         // check that input is the same size as the first layer of our network
         guard input.count == weights.first?.count else {
             print("Input (size \(input.count)) is not the same size as first layer of network (\(weights.first?.count))")

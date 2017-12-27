@@ -23,6 +23,7 @@ class Recipe: NSObject {
     
     // used for reading training data set
     var trainingData : Array<(input: Array<Float>, output: Array<Float>)>? = nil
+    var trainingDataIndex : Int = 0
     
     init(title: String, rating: Float, ingredients: Dictionary<String, Float>, calories: Float, protein: Float, fat: Float, sodium: Float, orderedIngredients: Array<String>, orderedIncludedIngredients: Array<Float>, allIngredients : Array<String>) {
         self.title = title
@@ -107,6 +108,21 @@ class Recipe: NSObject {
         self.trainingData = trainingDataArray
         return trainingDataArray
     }
-            
+    
+    // return the next piece of training data
+    func getNextTrainingData() -> (input: Array<Float>, output: Array<Float>)? {
+        // check if training data array is nil
+        if self.trainingData == nil {
+            self.trainingData = createTrainingData()
+        }
+        if self.trainingDataIndex > (self.trainingData?.endIndex)! {
+            // too big, return nil
+            return nil
+        } else {
+            let nextPieceOfTrainingData = self.trainingData![self.trainingDataIndex]
+            self.trainingDataIndex += 1
+            return nextPieceOfTrainingData
+        }
+    }
         
 }

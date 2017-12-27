@@ -79,7 +79,7 @@ class recipe_networkTests: XCTestCase {
     
     func testCreateAllTrainingData() {
         let extractor = DataExtractor()
-        extractor.createAllTrainingData()
+        extractor.createAllTrainingData(datasetNum: 1)
     }
     
     func trainNN() {
