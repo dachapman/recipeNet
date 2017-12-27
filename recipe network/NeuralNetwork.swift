@@ -21,6 +21,9 @@ class NeuralNetwork: NSObject {
     // default value is sigmoid activation function, but can also set it to relu
     var activationType : NetworkActivation = NetworkActivation.sigmoid
     
+    // learning rate controls how much "delta" impacts weight adjustments
+    var learningRate : Double = 0.1
+    
     init (layerWidth: Array<Int>) {
         initRandomWeights(layerWidth: layerWidth)
     }
@@ -59,7 +62,7 @@ class NeuralNetwork: NSObject {
             print("inference failed to produce output")
             return []
         }
-        // initialize delta array which holds one delta for each activation
+        // initialize delta array which holds one delta for each activation.
         var delta: [[Double]] = []
         for layer in 0..<neuronActivation.count {
             // one delta for each neuron
@@ -71,9 +74,29 @@ class NeuralNetwork: NSObject {
         for neuron in 0..<output.count {
             //
             let error = desiredOutput[neuron] - output[neuron]
-            // compute how much we want to change
-            
+            // compute how much we want to change (delta)
+            // compute delta for output layer
+            delta[lastIndexActivation][neuron] = activationDerivative(number: neuronActivation[lastIndexActivation][neuron]) * error
         }
+        // back propagate the rest of the deltas all the way back to our input
+        // iterate over the layers backward
+        for layer in (0..<weights.count).reversed() {
+            for neuron in 0..<weights[layer].count {
+                // sum the error for this layer using dot product
+                let sum = dotProduct(array1: weights[layer][neuron], array2: delta[layer + 1])
+                delta[layer][neuron] = activationDerivative(number: neuronActivation[layer][neuron]) * sum
+            }
+        }
+        
+        // update the weights
+        for layer in 0..<weights.count {
+            for i in 0..<weights[layer].count {
+                for j in 0..<weights[layer][i].count {
+                    weights[layer][i][j] += (learningRate * neuronActivation[layer][i] * delta[layer + 1][j])
+                }
+            }
+        }
+        return output
     }
     
     // returns output from network (all ingredients in a complete recipe)
@@ -165,5 +188,59 @@ class NeuralNetwork: NSObject {
     
     func makeRandomValue(range:Range<Int>) -> Int {
         return Int(arc4random_uniform(UInt32(range.upperBound - range.lowerBound))) + range.lowerBound
+    }
+    
+    func dotProduct(array1: Array<Double>, array2: Array<Double>) -> Double {
+        // check that array1 is the same size as array2
+        guard array1.count == array2.count else {
+            print("array1 (size \(array1.count)) is not the same size as array2 (\(array2.count))")
+            return -1.0
+        }
+        return zip(array1, array2).map(*).reduce(0, +)
+    }
+    
+    // write weights array to a file for possible future use
+    func saveWeightsToFile(index: Int) {
+        do {
+            let documentsDirectoryPathString = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+            let documentsDirectoryPath = NSURL(string: documentsDirectoryPathString)!
+            let filename = "weights_\(index).json"
+            
+            let jsonFilePath = documentsDirectoryPath.appendingPathComponent(filename)
+            let fileManager = FileManager.default
+            var isDirectory: ObjCBool = false
+            
+            // creating a .json file in the Documents folder
+            if !fileManager.fileExists(atPath: (jsonFilePath?.absoluteString)!, isDirectory: &isDirectory) {
+                let created = fileManager.createFile(atPath: (jsonFilePath?.absoluteString)!, contents: nil, attributes: nil)
+                if created {
+                    print("File created \(String(describing: jsonFilePath)) ")
+                } else {
+                    print("Couldn't create file for some reason")
+                }
+            } else {
+                print("File already exists: \(String(describing: jsonFilePath))")
+            }
+            
+            // creating JSON out of the above array
+            var jsonData: Data!
+            do {
+                jsonData = try JSONSerialization.data(withJSONObject: weights as NSArray, options: JSONSerialization.WritingOptions());
+            } catch let error as NSError {
+                print("Array to JSON conversion failed: \(error.localizedDescription)")
+            }
+            
+            // Write that JSON to the file created earlier
+            do {
+                let file = try FileHandle(forWritingTo: jsonFilePath!)
+                file.write(jsonData)
+                print("JSON data was written to the file successfully! \(String(describing: jsonFilePath))")
+            } catch let error as NSError {
+                print("Couldn't write to file: \(error.localizedDescription)")
+            }
+            
+        } catch let error as NSError {
+            print("Array to JSON conversion failed: \(error.localizedDescription)")
+        }
     }
 }
