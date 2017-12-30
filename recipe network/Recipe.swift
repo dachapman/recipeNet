@@ -15,17 +15,17 @@ class Recipe: NSObject {
     var protein : Float
     var fat : Float
     var sodium : Float
-    var ingredients : Dictionary<String, Float>
+    var ingredients : Dictionary<String, Double>
     var orderedIngredients : Array<String>
-    var orderedIncludedIngredients : Array<Float>
+    var orderedIncludedIngredients : Array<Double>
     // a short array which represents JUST the ingredients that are not 0.0 in this recipe
     var allIngredients : Array<String>
     
     // used for reading training data set
-    var trainingData : Array<(input: Array<Float>, output: Array<Float>)>? = nil
+    var trainingData : Array<(input: Array<Double>, output: Array<Double>)>? = nil
     var trainingDataIndex : Int = 0
     
-    init(title: String, rating: Float, ingredients: Dictionary<String, Float>, calories: Float, protein: Float, fat: Float, sodium: Float, orderedIngredients: Array<String>, orderedIncludedIngredients: Array<Float>, allIngredients : Array<String>) {
+    init(title: String, rating: Float, ingredients: Dictionary<String, Double>, calories: Float, protein: Float, fat: Float, sodium: Float, orderedIngredients: Array<String>, orderedIncludedIngredients: Array<Double>, allIngredients : Array<String>) {
         self.title = title
         self.rating = rating
         self.ingredients = ingredients
@@ -49,13 +49,13 @@ class Recipe: NSObject {
                 // make recipe
                 self.init(title: dictionaryRepresentation["title"] as! String,
                           rating: dictionaryRepresentation["rating"] as! Float,
-                          ingredients: dictionaryRepresentation["ingredients"] as! Dictionary<String, Float>,
+                          ingredients: dictionaryRepresentation["ingredients"] as! Dictionary<String, Double>,
                           calories: dictionaryRepresentation["calories"] as! Float,
                           protein: dictionaryRepresentation["protein"] as! Float,
                           fat: dictionaryRepresentation["fat"] as! Float,
                           sodium: dictionaryRepresentation["sodium"] as! Float,
                           orderedIngredients: dictionaryRepresentation["orderedIngredients"] as! Array<String>,
-                          orderedIncludedIngredients: dictionaryRepresentation["orderedIncludedIngredients"] as! Array<Float>,
+                          orderedIncludedIngredients: dictionaryRepresentation["orderedIncludedIngredients"] as! Array<Double>,
                           allIngredients: dictionaryRepresentation["allIngredients"] as! Array<String>)
             } else {
                 return nil
@@ -65,6 +65,27 @@ class Recipe: NSObject {
             return nil
         }
     }
+    
+    //
+    class func predictIngredientToAdd(input: Array<Double>, network: NeuralNetwork) -> (array: Array<Double>, index: Int) {
+        var networkOutput = network.predict(input: input)
+        var netOutMinusIn : Array<Double> = []
+        
+        var maxIndex = 0
+        var maxValue = 0.0
+        for i in 0..<networkOutput.count {
+            let diff = networkOutput[i] - input[i]
+            netOutMinusIn.append(diff)
+            if diff > maxValue {
+                maxValue = diff
+                maxIndex = i
+            }
+        }
+        var ingredientToAdd = Array(repeatElement(0.0, count: networkOutput.count))
+        ingredientToAdd[maxIndex] = 1.0
+        return (array: ingredientToAdd, index: maxIndex)
+    }
+    
     
     // create a dictionary and serialize an instance of recipe to a string
     func toJSON() -> String? {
@@ -92,30 +113,41 @@ class Recipe: NSObject {
     
     // create the training data from a single recipe, return an array of tuples with
     // an input of a recipe missing an ingredient, and an output of the original recipe
-    func createTrainingData() -> Array<(input: Array<Float>, output: Array<Float>)> {
+    func createTrainingData() -> Array<(input: Array<Double>, output: Array<Double>)> {
         let output = self.orderedIncludedIngredients
-        var trainingDataArray = Array<(input: Array<Float>, output: Array<Float>)>()
+        var trainingDataArray = Array<(input: Array<Double>, output: Array<Double>)>()
         // use allIngredients to find the indices for each ingredient.
         var arrayOfIndicesForIngredients = Array<Int>()
         for ingredient in self.allIngredients {
             arrayOfIndicesForIngredients.append(self.orderedIngredients.index(of: ingredient)!)
         }
+        // remove one ingredient from original recipe
         for ingredientToRemove in arrayOfIndicesForIngredients {
             var inputDataForOneVariation = self.orderedIncludedIngredients
             inputDataForOneVariation[ingredientToRemove] = 0.0
             trainingDataArray.append((input: inputDataForOneVariation, output: output))
         }
+        // remove two ingredients from original recipe
+        for firstIngredientToRemove in arrayOfIndicesForIngredients {
+            for secondIngredientToRemove in arrayOfIndicesForIngredients {
+                var inputDataForOneVariation = self.orderedIncludedIngredients
+                inputDataForOneVariation[firstIngredientToRemove] = 0.0
+                inputDataForOneVariation[secondIngredientToRemove] = 0.0
+                trainingDataArray.append((input: inputDataForOneVariation, output: output))
+            }
+        }
+        
         self.trainingData = trainingDataArray
         return trainingDataArray
     }
     
     // return the next piece of training data
-    func getNextTrainingData() -> (input: Array<Float>, output: Array<Float>)? {
+    func getNextTrainingData() -> (input: Array<Double>, output: Array<Double>)? {
         // check if training data array is nil
         if self.trainingData == nil {
             self.trainingData = createTrainingData()
         }
-        if self.trainingDataIndex > (self.trainingData?.endIndex)! {
+        if self.trainingDataIndex > ((self.trainingData?.endIndex ?? 0) - 1) {
             // too big, return nil
             return nil
         } else {

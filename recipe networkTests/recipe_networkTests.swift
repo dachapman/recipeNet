@@ -82,8 +82,36 @@ class recipe_networkTests: XCTestCase {
         extractor.createAllTrainingData(datasetNum: 1)
     }
     
-    func trainNN() {
+    func testTrainNN() {
+        let extractor = DataExtractor()
+        var currentPieceOfData = extractor.getNextData(dataset: .train)
+        var neuralNet = NeuralNetwork(layerWidth:[(currentPieceOfData?.input.count)!,16,16,(currentPieceOfData?.output.count)!])
+
+        while currentPieceOfData != nil {
+            neuralNet.train(input: currentPieceOfData!.input, desiredOutput: currentPieceOfData!.output)
+            currentPieceOfData = extractor.getNextData(dataset: .train)
+        }
         
+        neuralNet.saveWeightsToFile(index: neuralNet.trainingIterationCount)
     }
     
+    func testGeneralizationAccuracy() {
+        let extractor = DataExtractor()
+        var currentPieceOfData = extractor.getNextData(dataset: .test)
+        var numCorrect = 0.0
+        var totalNum = 0.0
+        var neuralNet = NeuralNetwork(layerWidth:[(currentPieceOfData?.input.count)!,16,16,(currentPieceOfData?.output.count)!])
+        
+        while currentPieceOfData != nil {
+            let predictedIngredientToAdd = Recipe.predictIngredientToAdd(input: currentPieceOfData!.input, network:neuralNet)
+            if currentPieceOfData!.output[predictedIngredientToAdd.index] == 1.0 {
+                numCorrect += 1.0
+            }
+            totalNum += 1.0
+            currentPieceOfData = extractor.getNextData(dataset: .test)
+        }
+        print("Accuracy is \(numCorrect/totalNum)")
+    }
+    
+
 }

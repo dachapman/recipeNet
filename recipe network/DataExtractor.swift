@@ -20,7 +20,7 @@ class DataExtractor: NSObject {
     // properties used for getting training data
     var fileIndex : Int = 1
     var fileData : Array<Recipe>? = nil
-    var recipeIndex : Int = 0
+    var recipeIndex : Int = -1
     var recipe : Recipe? = nil
     
     // split the data
@@ -97,13 +97,13 @@ class DataExtractor: NSObject {
             i = i + 1
             print("processing \(i) of \(recipeStringArray.count)")
             let dictionary = recipeDictionary(recipeString: recipeString!)
-            var ingredientsDictionary = Dictionary<String, Float>()
-            var ingredientsInRecipe = Array<Float>()
+            var ingredientsDictionary = Dictionary<String, Double>()
+            var ingredientsInRecipe = Array<Double>()
             var includedIngredients = Array<String>()
 
             for key in ingredListArray! {
-                ingredientsDictionary[key] = Float(dictionary[key] ?? "0.0")
-                ingredientsInRecipe.append(Float(dictionary[key] ?? "0.0")!)
+                ingredientsDictionary[key] = Double(dictionary[key] ?? "0.0")
+                ingredientsInRecipe.append(Double(dictionary[key] ?? "0.0")!)
                 if (dictionary[key] != "0.0") {
                     includedIngredients.append(key)
                 }
@@ -201,8 +201,8 @@ class DataExtractor: NSObject {
     }
     
     // create an array of training data sets for all the recipes
-    func createAllTrainingData(datasetNum: Int) -> Array<(input: Array<Float>, output: Array<Float>)> {
-        var allTrainingData = Array<(input: Array<Float>, output: Array<Float>)>()
+    func createAllTrainingData(datasetNum: Int) -> Array<(input: Array<Double>, output: Array<Double>)> {
+        var allTrainingData = Array<(input: Array<Double>, output: Array<Double>)>()
         for recipe in fromJSON(dataSetNum: datasetNum)! {
             allTrainingData = allTrainingData + recipe.createTrainingData()
         }
@@ -215,7 +215,10 @@ class DataExtractor: NSObject {
             self.fileData = fromJSON(dataSetNum: self.fileIndex)
             self.fileIndex += 1
         }
-        if self.recipeIndex > (self.fileData?.endIndex)! {
+        
+        self.recipeIndex += 1
+
+        if self.recipeIndex > (self.fileData?.endIndex)! - 1 {
             // get the next data file
             self.fileData = fromJSON(dataSetNum: self.fileIndex)
             self.fileIndex += 1
@@ -228,25 +231,29 @@ class DataExtractor: NSObject {
     }
     
     // return the next piece of data from the dataset
-    func getNextData() -> (input: Array<Float>, output: Array<Float>)? {
+    func getNextData() -> (input: Array<Double>, output: Array<Double>)? {
+        
+        var nextTrainingData : (input: Array<Double>, output: Array<Double>)? = nil
         if self.recipe == nil {
             self.recipe = getNextRecipe()
         }
         if self.recipe != nil {
-            if self.recipe?.getNextTrainingData() == nil {
+            nextTrainingData = self.recipe?.getNextTrainingData()
+            if nextTrainingData == nil {
                 self.recipe = getNextRecipe()
+                nextTrainingData = self.recipe?.getNextTrainingData()
             }
         } else {
             return nil
         }
         self.currentDataIndex += 1
-        return self.recipe?.getNextTrainingData()
+        return nextTrainingData
     }
     
     // create a test, dev, training split of all the data
     // suggested split:  training: 70%, dev: 15%, test: 15%
-    func getNextData(dataset: Dataset) -> (input: Array<Float>, output: Array<Float>)? {
-        var pieceOfDataToReturn : (input: Array<Float>, output: Array<Float>)? = nil
+    func getNextData(dataset: Dataset) -> (input: Array<Double>, output: Array<Double>)? {
+        var pieceOfDataToReturn : (input: Array<Double>, output: Array<Double>)? = nil
         var flagInCorrectRange = false
         
         // purposely incurring a performance hit in order to:
@@ -257,6 +264,9 @@ class DataExtractor: NSObject {
             case .train:
                 if self.currentDataIndex % 100 < self.trainingPercent {
                     pieceOfDataToReturn = self.getNextData()
+                    if pieceOfDataToReturn == nil {
+                        print("Error retreiving data in training at index: \(currentDataIndex)")
+                    }
                     flagInCorrectRange = true
                 } else {
                     _ = self.getNextData()
