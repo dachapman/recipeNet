@@ -83,24 +83,47 @@ class recipe_networkTests: XCTestCase {
     }
     
     func testTrainNN() {
+        let epochs = 30 // number of times to iterate over training set
         let extractor = DataExtractor()
-        var currentPieceOfData = extractor.getNextData(dataset: .train)
-        var neuralNet = NeuralNetwork(layerWidth:[(currentPieceOfData?.input.count)!,16,16,(currentPieceOfData?.output.count)!])
+        let currentPieceOfData = extractor.getNextData(dataset: .train)
+        var neuralNet = NeuralNetwork(layerWidth:[(currentPieceOfData?.input.count)!,256,100,256,(currentPieceOfData?.output.count)!])
 
-        while currentPieceOfData != nil {
-            neuralNet.train(input: currentPieceOfData!.input, desiredOutput: currentPieceOfData!.output)
-            currentPieceOfData = extractor.getNextData(dataset: .train)
-        }
+        neuralNet.miniValidation = DataExtractor().createAllTrainingData(datasetNum: 1)
         
+        for epoch in 1...epochs {
+            print("starting epoch: \(epoch) out of \(epochs)")
+            let extractor = DataExtractor()
+            var currentPieceOfData = extractor.getNextData(dataset: .train)
+
+            while currentPieceOfData != nil {
+                neuralNet.train(input: currentPieceOfData!.input, desiredOutput: currentPieceOfData!.output)
+                currentPieceOfData = extractor.getNextData(dataset: .train)
+            }
+            print("finished epoch: \(epoch) out of \(epochs)")
+            print("Validation accuracy: \(accuracy(dataset: .dev))")
+        }
         neuralNet.saveWeightsToFile(index: neuralNet.trainingIterationCount)
+        print("Testing accuracy: \(accuracy(dataset: .test))")
     }
     
     func testGeneralizationAccuracy() {
+        print(accuracy(dataset: .test))
+    }
+    
+    func testTrainingAccuracy() {
+        print(accuracy(dataset: .train))
+    }
+    
+    func testValidationAccuracy() {
+        print(accuracy(dataset: .dev))
+    }
+
+    func accuracy(dataset: Dataset) -> Double {
         let extractor = DataExtractor()
-        var currentPieceOfData = extractor.getNextData(dataset: .test)
+        var currentPieceOfData = extractor.getNextData(dataset: dataset)
         var numCorrect = 0.0
         var totalNum = 0.0
-        var neuralNet = NeuralNetwork(layerWidth:[(currentPieceOfData?.input.count)!,16,16,(currentPieceOfData?.output.count)!])
+        let neuralNet = NeuralNetwork(layerWidth:[(currentPieceOfData?.input.count)!,256,100,256,(currentPieceOfData?.output.count)!])
         
         while currentPieceOfData != nil {
             let predictedIngredientToAdd = Recipe.predictIngredientToAdd(input: currentPieceOfData!.input, network:neuralNet)
@@ -108,9 +131,9 @@ class recipe_networkTests: XCTestCase {
                 numCorrect += 1.0
             }
             totalNum += 1.0
-            currentPieceOfData = extractor.getNextData(dataset: .test)
+            currentPieceOfData = extractor.getNextData(dataset: dataset)
         }
-        print("Accuracy is \(numCorrect/totalNum)")
+        return numCorrect/totalNum
     }
     
 

@@ -181,7 +181,9 @@ class DataExtractor: NSObject {
     
     // extract individual recipe object strings, return an array of recipes
     func fromJSON(dataSetNum: Int) -> Array<Recipe>? {
-        let dataString = readDataFromFile(filename: "json_data/dataset_\(dataSetNum)", ofType: "json")!
+        guard let dataString = readDataFromFile(filename: "json_data/dataset_\(dataSetNum)", ofType: "json") else {
+            return nil
+        }
         
         let jsonData = dataString.data(using: String.Encoding.utf8)
         do {
@@ -217,6 +219,10 @@ class DataExtractor: NSObject {
         }
         
         self.recipeIndex += 1
+        
+        if self.fileData == nil {
+            return nil
+        }
 
         if self.recipeIndex > (self.fileData?.endIndex)! - 1 {
             // get the next data file

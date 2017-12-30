@@ -30,6 +30,9 @@ struct NeuralNetwork {
     // keep track of training iterations in order to write out weights after every 500th iteration
     var trainingIterationCount : Int = 0
     
+    // if mini validation set is provided, this will validate every 5000 training iterations
+    var miniValidation : Array<(input: Array<Double>, output: Array<Double>)>?
+    
     init (layerWidth: Array<Int>) {
 //        initRandomWeights(layerWidth: layerWidth)
        getWeightsArray(layerWidth: layerWidth)
@@ -135,9 +138,21 @@ struct NeuralNetwork {
         
         trainingIterationCount += 1
         
-        // write out the weights every 500 times
+        // write out the weights every 5000 times
         if trainingIterationCount % 5000 == 0 {
             saveWeightsToFile(index: trainingIterationCount)
+            if self.miniValidation != nil {
+                var numCorrect = 0.0
+                var totalNum = 0.0
+                for example in miniValidation! {
+                    let predictedIngredientToAdd = Recipe.predictIngredientToAdd(input: example.input, network:self)
+                    if example.output[predictedIngredientToAdd.index] == 1.0 {
+                        numCorrect += 1.0
+                    }
+                    totalNum += 1.0
+                }
+                print("mini validation accuracy: \(numCorrect / totalNum)")
+            }
         }
         // check that input is the same size as the first layer of our network
         guard input.count == weights.first?.count else {
